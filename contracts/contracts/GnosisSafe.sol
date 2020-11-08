@@ -629,14 +629,18 @@ contract ISignatureValidator is ISignatureValidatorConstants {
         returns (bytes4);
 }
 
+contract ISunValidator {
+  function allowedToDoMeta(address account) external view returns (bool);
+}
+
 /// @title Gnosis Safe - A multisignature wallet with support for confirmations using signed messages based on ERC191.
 /// @author Stefan George - <stefan@gnosis.io>
 /// @author Richard Meissner - <richard@gnosis.io>
 /// @author Ricardo Guilherme Schmidt - (Status Research & Development GmbH) - Gas Token Payment
-contract GnosisSafe
-    is MasterCopy, ModuleManager, OwnerManager, SignatureDecoder, SecuredTokenTransfer, ISignatureValidatorConstants, FallbackManager {
-
+contract GnosisSafe is MasterCopy, ModuleManager, OwnerManager, SignatureDecoder, SecuredTokenTransfer, ISignatureValidatorConstants, FallbackManager {
     using SafeMath for uint256;
+
+    ISunValidator public sunValidator;
 
     string public constant NAME = "Gnosis Safe";
     string public constant VERSION = "1.1.1";
@@ -687,6 +691,7 @@ contract GnosisSafe
 
     /// @dev Setup function sets initial storage of contract.
     /// @param _owners List of Safe owners.
+    /// @param _sunValidator The address of smart contract, which validates can users do meta ttx
     /// @param _threshold Number of required confirmations for a Safe transaction.
     /// @param to Contract address for optional delegate call.
     /// @param data Data payload for optional delegate call.
@@ -696,6 +701,7 @@ contract GnosisSafe
     /// @param paymentReceiver Adddress that should receive the payment (or 0 if tx.origin)
     function setup(
         address[] calldata _owners,
+        address _sunValidator,
         uint256 _threshold,
         address to,
         bytes calldata data,
@@ -707,8 +713,11 @@ contract GnosisSafe
         external
     {
         require(domainSeparator == 0, "Domain Separator already set!");
+
+        sunValidator = ISunValidator(_sunValidator);
         domainSeparator = keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, this));
         setupOwners(_owners, _threshold);
+
         if (fallbackHandler != address(0)) internalSetFallbackHandler(fallbackHandler);
         // As setupOwners can only be called if the contract has not been initialized we don't need a check for setupModules
         setupModules(to, data);
@@ -877,6 +886,7 @@ contract GnosisSafe
             );
             lastOwner = currentOwner;
         }
+        require(sunValidator.allowedToDoMeta(lastOwner), "SunWallet: User is not able to do meta transactions!");
     }
 
     /// @dev Allows to estimate a Safe transaction.
