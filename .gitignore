@@ -67,3 +67,4 @@ node_modules/
 .env
 
 functions/src/env.json
+biconomy-gnosis.json
