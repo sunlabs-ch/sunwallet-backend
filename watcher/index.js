@@ -41,22 +41,20 @@ const initApp = () => {
         .where('transaction', '==', event.transactionHash.toLowerCase())
         .get()
 
-      if (!result.docs[0] && result.docs[0].id) {
-        throw 'User for this contract not found!'
+      if (result.docs[0] && result.docs[0].id) {
+        console.log('= User ID', result.docs[0].id)
+        console.log('= New proxy contract', localProxyAddress)
+
+        await db
+          .collection('usersContracts')
+          .doc(result.docs[0].id)
+          .update({
+            status: 'SUCCESS',
+            contract: web3.utils.toChecksumAddress(localProxyAddress)
+          })
+
+        await whitelistAddresses([localProxyAddress])
       }
-
-      console.log('= User ID', result.docs[0].id)
-      console.log('= New proxy contract', localProxyAddress)
-
-      await db
-        .collection('usersContracts')
-        .doc(result.docs[0].id)
-        .update({
-          status: 'SUCCESS',
-          contract: web3.utils.toChecksumAddress(localProxyAddress)
-        })
-
-      await whitelistAddresses([localProxyAddress])
     } catch (error) {
       console.log('= Error found!', error)
     }

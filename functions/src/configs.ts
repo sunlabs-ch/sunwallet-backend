@@ -3,18 +3,18 @@ const envValues = Object.keys(functions.config()).length ? functions.config() : 
 
 export const configs = {
   // Infura RPC provder and private key of cloud signer
-  provider: envValues.env.RPC_PROVIDER,
-  signerPrivateKey: envValues.env.SIGNER_PRIVATE_KEY,
+  provider: envValues.env.rpc_provider,
+  signerPrivateKey: envValues.env.signer_private_key,
 
   // Biconomy values
-  biconomyApiKey: envValues.env.BICONOMY_API_KEY,
-  biconomyWhitelistToken: envValues.env.BICONOMY_WHITELIST_TOKEN,
+  biconomyApiKey: envValues.env.biconomy_api_key,
+  biconomyWhitelistToken: envValues.env.biconomy_whitelist_token,
 
   // Generated bearer auth for endpoint
-  bearerAuthToken: envValues.env.BEARER_AUTH,
+  bearerAuthToken: envValues.env.bearer_auth,
 
   // Smart contract addresses
-  proxyFactoryAddress: envValues.env.PROXY_FACTORY_CONTRACT,
-  gnosisSafeAddress: envValues.env.GNOSIS_SAFE_ADDRESS,
-  sunValidatorAddress: envValues.env.SUN_VALIDATOR
+  proxyFactoryAddress: envValues.env.proxy_factory_contract,
+  gnosisSafeAddress: envValues.env.gnosis_safe_address,
+  sunValidatorAddress: envValues.env.sun_validator
 }

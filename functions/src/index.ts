@@ -33,10 +33,14 @@ export const createProxyContract = functions.https.onRequest((request, response)
     process.exit()
   }
 
+  console.log('- Validation passed!')
+
   biconomy
   .onEvent(biconomy.READY, async () => {
     try {
       const userData = await fetchUserData(publicAddress)
+      console.log('-', userData ? 'User exists!' : 'Creating a new user!')
+
       if (userData) {
         const {
           id,
@@ -58,7 +62,11 @@ export const createProxyContract = functions.https.onRequest((request, response)
       }
 
       const txParams = await getProxyCreationTx(publicAddress)
+      console.log('- TX params ready!')
+
       const signedTx: any = await web3.eth.accounts.signTransaction(txParams, '0x' + configs.signerPrivateKey)
+      console.log('- TX signed!')
+
       await web3.eth.sendSignedTransaction(signedTx.rawTransaction, async (error: any, txHash: string) => {
         if (error) {
           if (userData) {
@@ -88,7 +96,9 @@ export const createProxyContract = functions.https.onRequest((request, response)
     }
   })
   .onEvent(biconomy.ERROR, (error: any) => {
+    console.log('Biconomy error:', error)
     response.status(502).send('Bad Gateway!')
+    process.exit()
   })
 })
 
@@ -130,16 +140,22 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       process.exit()
     }
 
+    console.log('- Validation passed!')
+
     biconomy
     .onEvent(biconomy.READY, async () => {
       try {
         await whitelistAddresses([destinationAddress])
+        console.log('- Added to whitelist!')
 
         const txParams = await getExecuteMethodTx(publicAddress, destinationAddress, signature, value, contractWalletAddress)
+        console.log('- TX params ready!')
+
         const signedTx: any = await web3.eth.accounts.signTransaction(txParams, configs.signerPrivateKey).catch((error: any) => {
           response.status(417).send(error)
           process.exit()
         })
+        console.log('- TX signed!')
 
         await web3.eth.sendSignedTransaction(signedTx.rawTransaction, async (error: any, txHash: string) => {
           if (error) {
@@ -156,7 +172,9 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       }
     })
     .onEvent(biconomy.ERROR, (error: any) => {
-      throw error
+      console.log('Biconomy error:', error)
+      response.status(502).send('Bad Gateway!')
+      process.exit()
     })
   } catch (error) {
     response.status(502).send('Bad Gateway!')
@@ -183,6 +201,8 @@ export const getWalletInfo = functions.https.onRequest(async (request, response)
       response.status(400).send('Invalid address!')
       process.exit()
     }
+
+    console.log('- Validation passed!')
 
     const userData = await fetchUserData(publicAddress)
     if (userData) {
