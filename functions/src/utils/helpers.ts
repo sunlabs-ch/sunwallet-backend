@@ -11,6 +11,6 @@ export const toWei = (value: any) => {
 export const shortenAddress = (address: string, charsStart = 3, charsEnd = 4) => {
   return `${address.substring(0, charsStart + 2)}...${address.substring(
     address.length - charsEnd,
-    address.length,
+    address.length
   )}`
 }

@@ -17,6 +17,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 })
 const db = admin.firestore()
+console.log('= DB connected!')
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider(RPC_PROVIDER))
 const contract = new web3.eth.Contract(factoryAbi, FACTORY_ADDRESS)
@@ -27,27 +28,38 @@ const initApp = () => {
 
   contract.events.ProxyCreation()
   .on('data', async (event) => {
-    console.log('= New event received!', event.transactionHash)
+    try {
+      console.log('= New event received!', event.transactionHash)
 
-    let localProxyAddress = hexStripZeros(event.raw.data)
-    if (localProxyAddress.length < 42) {
-      localProxyAddress = fixTrailingZero(localProxyAddress)
+      let localProxyAddress = hexStripZeros(event.raw.data)
+      if (localProxyAddress.length < 42) {
+        localProxyAddress = fixTrailingZero(localProxyAddress)
+      }
+
+      const result = await db
+        .collection('usersContracts')
+        .where('transaction', '==', event.transactionHash.toLowerCase())
+        .get()
+
+      if (!result.docs[0] && result.docs[0].id) {
+        throw 'User for this contract not found!'
+      }
+
+      console.log('= User ID', result.docs[0].id)
+      console.log('= New proxy contract', localProxyAddress)
+
+      await db
+        .collection('usersContracts')
+        .doc(result.docs[0].id)
+        .update({
+          status: 'SUCCESS',
+          contract: web3.utils.toChecksumAddress(localProxyAddress)
+        })
+
+      await whitelistAddresses([localProxyAddress])
+    } catch (error) {
+      console.log('= Error found!', error)
     }
-
-    const result = await db
-      .collection('usersContracts')
-      .where('transaction', '==', event.transactionHash)
-      .get()
-
-    await db
-      .collection('usersContracts')
-      .doc(result.docs[0].id)
-      .update({
-        status: 'SUCCESS',
-        contract: web3.utils.toChecksumAddress(localProxyAddress)
-      })
-
-    await whitelistAddresses([localProxyAddress])
   })
   .on('error', (error) => {
     console.log('= Error!', error)
@@ -65,16 +77,15 @@ const fixTrailingZero = (address) => {
 }
 
 const hexStripZeros = (value) => {
-  let result = ''
   if (!web3.utils.isHex(value)) {
-    throw new Error(`Invalid hex string ${value}`)
+    throw new Error('invalid hex string', { arg: 'value', value: value })
   }
 
   while (value.length > 3 && value.substring(0, 3) === '0x0') {
-    result = '0x' + value.substring(3)
+      value = '0x' + value.substring(3)
   }
 
-  return result
+  return value
 }
 
 const whitelistAddresses = async (addresses) => {

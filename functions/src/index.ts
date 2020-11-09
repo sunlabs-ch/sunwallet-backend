@@ -72,7 +72,7 @@ export const createProxyContract = functions.https.onRequest((request, response)
             await updateUserTransactionHash(userData.id, txHash)
           } else {
             await addNewUser(
-              txHash,
+              txHash.toLowerCase(),
               web3.utils.toChecksumAddress(publicAddress),
               ContractState.PENDING,
               null
@@ -234,7 +234,12 @@ export const getSignature = functions.https.onRequest(async (request, response) 
     }
 
     const userData = await fetchUserData(publicAddress)
-    const proxyContractAddress = userData?.contract
+    if (!userData) {
+      response.status(400).send(`${shortenAddress(publicAddress)} user has not contract wallet!`)
+      process.exit()
+    }
+
+    const proxyContractAddress = userData.contract
     const proxyContract = new web3.eth.Contract(GnosisSafeAbi, proxyContractAddress)
 
     const valueWei = toWei(value)
