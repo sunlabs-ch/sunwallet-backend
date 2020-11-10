@@ -30,3 +30,30 @@ export const whitelistAddresses = async (destinationAddresses: string []) => {
     throw error
   }
 }
+
+export const postBiconomy = (publicAddress: string, txParams: any, contractAddress: string, methodKey: string) => {
+  try {
+    const body = {
+      to: contractAddress,
+      userAddress: publicAddress,
+      apiId: methodKey,
+      params: txParams,
+    }
+
+    const headerSettings = {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': configs.biconomyApiKey,
+      },
+    }
+
+    return new Promise((resolve, reject) => {
+      axios
+        .post('https://api.biconomy.io/api/v2/meta-tx/native', JSON.stringify(body), headerSettings)
+        .then((res: any) => resolve(res.data.txHash))
+        .catch((error: any) => reject(error))
+    })
+  } catch (error) {
+    throw error
+  }
+}

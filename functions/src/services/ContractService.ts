@@ -32,7 +32,7 @@ export const isAllowedToDoMeta = async (proxyAddress: string) => {
   }
 }
 
-export const getProxyCreationTx = async (publicAddress: string) => {
+export const getProxyCreationData = async (publicAddress: string) => {
   try {
     const gnosisSafeInstance = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
     const creationData = gnosisSafeInstance.methods.setup(
@@ -48,26 +48,16 @@ export const getProxyCreationTx = async (publicAddress: string) => {
     ).encodeABI()
 
     const proxyFactory = new web3.eth.Contract(ProxyFactoryAbi, configs.proxyFactoryAddress)
-    const tx = await proxyFactory.methods.createProxy(configs.gnosisSafeAddress, creationData).encodeABI()
-    const estimateGas = await proxyFactory.methods.createProxy(configs.gnosisSafeAddress, creationData).estimateGas()
+    const txData = proxyFactory.methods.createProxy(configs.gnosisSafeAddress, creationData).encodeABI()
 
-    const txParams = {
-      'from': publicAddress,
-      'gasLimit': estimateGas,
-      'to': configs.proxyFactoryAddress,
-      'value': '0x0',
-      'data': tx
-    }
-
-    return txParams
+    return txData
   } catch (error) {
     throw error
   }
 }
 
-export const getExecuteMethodTx = async (publicAddress: string, destinationAddress: string, signature: any, value: any, contractWalletAddress: string) => {
+export const getExecuteMethodData = async (publicAddress: string, destinationAddress: string, signature: any, value: any, contractWalletAddress: string) => {
   try {
-    const proxyContractInstance = new web3.eth.Contract(GnosisSafeAbi, contractWalletAddress)
     const valueWei = toWei(value)
     const operation = 0
     const gasPrice = 0
@@ -98,28 +88,18 @@ export const getExecuteMethodTx = async (publicAddress: string, destinationAddre
     const sig: any = ethers.utils.splitSignature(signature)
     const newSignature = `${sig.r}${sig.s.substring(2)}${Number(sig.v + 4).toString(16)}`
 
-    const tx = await proxyContractInstance.methods.execTransaction(
-        destinationAddress.toLowerCase(),
-        valueWei,
-        '0x0',
-        operation,
-        txGasEstimate,
-        baseGasEstimate,
-        gasPrice,
-        gasToken,
-        publicAddress,
-        newSignature
-    ).encodeABI()
-
-    const txParams = {
-      'from': publicAddress,
-      'gasLimit': web3.utils.toHex(2100000),
-      'to': contractWalletAddress,
-      'value': '0x0',
-      'data': tx
-    }
-
-    return txParams
+    return [
+      destinationAddress,
+      valueWei,
+      '0x0',
+      operation,
+      txGasEstimate,
+      baseGasEstimate,
+      gasPrice,
+      gasToken,
+      publicAddress,
+      newSignature
+    ]
   } catch (error) {
     throw error
   }

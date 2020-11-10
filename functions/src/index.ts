@@ -2,9 +2,9 @@ import * as functions from 'firebase-functions'
 
 // Services
 const { web3 } = require('./services/Web3Service')
-const { biconomy, whitelistAddresses } = require('./services/BiconomyService')
-const { getProxyContractNonce, isAllowedToDoMeta, getProxyCreationTx, getExecuteMethodTx } = require('./services/ContractService')
-const { addNewUser, fetchUserData, updateUserTransactionStatus, updateUserTransactionHash } = require('./services/DbService')
+const { postBiconomy, whitelistAddresses } = require('./services/BiconomyService')
+const { getProxyContractNonce, isAllowedToDoMeta, getProxyCreationData, getExecuteMethodData } = require('./services/ContractService')
+const { addNewUser, fetchUserData, updateUserTransactionStatus } = require('./services/DbService')
 
 // Utils
 const { toWei, isValidAddress, shortenAddress } = require('./utils/helpers')
@@ -14,92 +14,77 @@ const { GnosisSafeAbi } = require('./utils/abi')
 const { configs } = require('./configs')
 const { ContractState } = require('./constants/index')
 
-export const createProxyContract = functions.https.onRequest((request, response) => {
-  const { publicAddress } = request.body
-  const { authorization } = request.headers
+export const createProxyContract = functions.https.onRequest(async (request, response) => {
+  try {
+    const { publicAddress } = request.body
+    const { authorization } = request.headers
 
-  if (!authorization || !publicAddress) {
-    response.status(400).send('Bad Request!')
-    process.exit()
-  }
-
-  if (authorization !== `Bearer ${configs.bearerAuthToken}`) {
-    response.status(403).send('Invalid authorization!')
-    process.exit()
-  }
-
-  if (!isValidAddress(publicAddress)) {
-    response.status(400).send('Invalid address!')
-    process.exit()
-  }
-
-  console.log('- Validation passed!')
-
-  biconomy
-  .onEvent(biconomy.READY, async () => {
-    try {
-      const userData = await fetchUserData(publicAddress)
-      console.log('-', userData ? 'User exists!' : 'Creating a new user!')
-
-      if (userData) {
-        const {
-          id,
-          status
-        } = userData
-
-        // Currently user can own only 1 contract wallet!
-        // This area should be changed, if user can own more then 1 contract wallet.
-        switch (status) {
-          case ContractState.SUCCESS:
-            response.status(400).send('User contract already exists!')
-            process.exit()
-          case ContractState.PENDING:
-            response.status(400).send('User contract already submitted!')
-            process.exit()
-          case ContractState.FAILED:
-            await updateUserTransactionStatus(id, ContractState.PENDING)
-        }
-      }
-
-      const txParams = await getProxyCreationTx(publicAddress)
-      console.log('- TX params ready!')
-
-      const signedTx: any = await web3.eth.accounts.signTransaction(txParams, '0x' + configs.signerPrivateKey)
-      console.log('- TX signed!')
-
-      await web3.eth.sendSignedTransaction(signedTx.rawTransaction, async (error: any, txHash: string) => {
-        if (error) {
-          if (userData) {
-            await updateUserTransactionStatus(userData.id, ContractState.FAILED)
-          }
-
-          response.status(502).send('Bad Gateway!')
-          process.exit()
-        } else {
-          if (userData) {
-            await updateUserTransactionHash(userData.id, txHash)
-          } else {
-            await addNewUser(
-              txHash.toLowerCase(),
-              web3.utils.toChecksumAddress(publicAddress),
-              ContractState.PENDING,
-              null
-            )
-          }
-
-          response.status(200).send(txHash)
-          process.exit()
-        }
-      })
-    } catch (error) {
-      response.status(502).send('Bad Gateway!')
+    if (!authorization || !publicAddress) {
+      response.status(400).send('Bad Request!')
+      process.exit()
     }
-  })
-  .onEvent(biconomy.ERROR, (error: any) => {
-    console.log('Biconomy error:', error)
+
+    if (authorization !== `Bearer ${configs.bearerAuthToken}`) {
+      response.status(403).send('Invalid authorization!')
+      process.exit()
+    }
+
+    if (!isValidAddress(publicAddress)) {
+      response.status(400).send('Invalid address!')
+      process.exit()
+    }
+    console.log('- Validation passed!')
+
+    const userData = await fetchUserData(publicAddress)
+    console.log('-', userData ? 'User exists!' : 'Creating a new user!')
+
+    if (userData) {
+      const {
+        id,
+        status
+      } = userData
+
+      // Currently user can own only 1 contract wallet!
+      // This area should be changed, if user can own more then 1 contract wallet.
+      switch (status) {
+        case ContractState.SUCCESS:
+          response.status(400).send('User contract already exists!')
+          process.exit()
+        case ContractState.PENDING:
+          response.status(400).send('User contract already submitted!')
+          process.exit()
+        case ContractState.FAILED:
+          await updateUserTransactionStatus(id, ContractState.PENDING)
+      }
+    }
+
+    const txParams = await getProxyCreationData(publicAddress)
+
+    try {
+      const txHash = await postBiconomy(
+        publicAddress,
+        [configs.gnosisSafeAddress, txParams],
+        configs.proxyFactoryAddress,
+        '5248cc94-c9ea-4c4c-988e-05f4043b4ef1'
+      )
+
+      await addNewUser(
+        txHash.toLowerCase(),
+        web3.utils.toChecksumAddress(publicAddress),
+        ContractState.PENDING,
+        null  // Contract address will be added after tx confirmation
+      )
+
+      response.status(200).send(txHash)
+      process.exit()
+    } catch (error) {
+      if (userData) await updateUserTransactionStatus(userData.id, ContractState.FAILED)
+      response.status(502).send('Bad Gateway!')
+      process.exit()
+    }
+  } catch (error) {
     response.status(502).send('Bad Gateway!')
-    process.exit()
-  })
+  }
 })
 
 export const executeMetaTx = functions.https.onRequest(async (request, response) => {
@@ -135,49 +120,21 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
     }
 
     const userData = await fetchUserData(publicAddress)
-    if (!userData) {
+    if (!userData || !userData.contract) {
       response.status(400).send(`${shortenAddress(publicAddress)} user has not contract wallet!`)
       process.exit()
     }
-
     console.log('- Validation passed!')
 
-    biconomy
-    .onEvent(biconomy.READY, async () => {
-      try {
-        await whitelistAddresses([destinationAddress])
-        console.log('- Added to whitelist!')
+    await whitelistAddresses([destinationAddress])
+    console.log('- Added to whitelist!')
 
-        const txParams = await getExecuteMethodTx(publicAddress, destinationAddress, signature, value, contractWalletAddress)
-        console.log('- TX params ready!')
-
-        const signedTx: any = await web3.eth.accounts.signTransaction(txParams, configs.signerPrivateKey).catch((error: any) => {
-          response.status(417).send(error)
-          process.exit()
-        })
-        console.log('- TX signed!')
-
-        await web3.eth.sendSignedTransaction(signedTx.rawTransaction, async (error: any, txHash: string) => {
-          if (error) {
-            response.status(502).send('Bad Gateway!')
-            process.exit()
-          } else {
-            response.status(200).send(txHash)
-            process.exit()
-          }
-        })
-      } catch (error) {
-        response.status(502).send('Bad Gateway!')
-        process.exit()
-      }
-    })
-    .onEvent(biconomy.ERROR, (error: any) => {
-      console.log('Biconomy error:', error)
-      response.status(502).send('Bad Gateway!')
-      process.exit()
-    })
+    const txParams = await getExecuteMethodData(publicAddress, destinationAddress, signature, value, contractWalletAddress)
+    const txHash = await postBiconomy(publicAddress, txParams, userData.contract, 'dfa2d884-10ec-4ad4-924e-0fbfed3605c7')
+    response.status(200).send(txHash)
+    process.exit()
   } catch (error) {
-    response.status(502).send('Bad Gateway!')
+    response.status(502).send('Execution error!')
     process.exit()
   }
 })
