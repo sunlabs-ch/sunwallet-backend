@@ -24,6 +24,9 @@ const ContractState = Object.freeze({
   FAILED: 'FAILED'
 })
 
+// Local storage for processed transactions
+const processedTxs = {}
+
 const subscribeLogEvent = (
   contract,
   eventName,
@@ -72,40 +75,42 @@ const fixTrailingZero = (address) => {
   return `${address.substring(0, 2)}${trailingZero}${address.substring(2, address.length)}`
 }
 
-const publishEvent = async (eventName, event) => {
-  try {
-    console.log('[success] New event received!', event.transactionHash)
+const publishEvent = (eventName, event) => {
+  console.log('[success] New event received!', event.transactionHash)
 
-    if (eventName === Events['ProxyCreation']) {
-      let localProxyAddress = hexStripZeros(event.raw.data)
-      if (localProxyAddress.length < 42) {
-        localProxyAddress = fixTrailingZero(localProxyAddress)
-      }
-
-      const result = await db
-        .collection('usersContracts')
-        .where('transaction', '==', event.transactionHash.toLowerCase())
-        .where('status', '==', ContractState.PENDING)
-        .get()
-
-      if (result.docs[0] && result.docs[0].id) {
-        console.log('User ID =>', result.docs[0].id)
-        console.log('New proxy contract =>', localProxyAddress)
-        console.log('-----------')
-
-        await db
-          .collection('usersContracts')
-          .doc(result.docs[0].id)
-          .update({
-            status: ContractState.SUCCESS,
-            contract: localProxyAddress
-          })
-
-        await whitelistAddresses([localProxyAddress])
-      }
+  if (eventName === Events['ProxyCreation']) {
+    let localProxyAddress = hexStripZeros(event.raw.data)
+    if (localProxyAddress.length < 42) {
+      localProxyAddress = fixTrailingZero(localProxyAddress)
     }
-  } catch (error) {
-    throw error
+
+    const txHash = event.transactionHash.toLowerCase()
+
+    if (!processedTxs[txHash]) {
+      db
+      .collection('usersContracts')
+      .where('transaction', '==', txHash)
+      .where('status', '==', ContractState.PENDING)
+      .get()
+      .then(async (result) => {
+        if (result && result.docs[0] && result.docs[0].id) {
+          console.log('User ID =>', result.docs[0].id)
+          console.log('New proxy contract =>', localProxyAddress)
+          console.log('-----------')
+
+          await db
+            .collection('usersContracts')
+            .doc(result.docs[0].id)
+            .update({
+              status: ContractState.SUCCESS,
+              contract: localProxyAddress
+            })
+
+          await whitelistAddresses([localProxyAddress])
+          processedTxs[txHash] = true
+        }
+      })
+    }
   }
 }
 
