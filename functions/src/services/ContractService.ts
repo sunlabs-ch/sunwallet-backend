@@ -5,7 +5,7 @@ const { web3 } = require('./Web3Service')
 
 // Utils
 const { toWei } = require('../utils/helpers')
-const { SunValidatorAbi, GnosisSafeAbi, ProxyFactoryAbi } = require('../utils/abi')
+const { SunValidatorAbi, GnosisSafeAbi } = require('../utils/abi')
 
 // Configs
 const { configs } = require('../configs')
@@ -34,8 +34,8 @@ export const isAllowedToDoMeta = async (proxyAddress: string) => {
 
 export const getProxyCreationData = async (publicAddress: string) => {
   try {
-    const gnosisSafeInstance = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
-    const creationData = gnosisSafeInstance.methods.setup(
+    const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
+    const creationData = gnosisSafeMasterCopy.methods.setup(
       [publicAddress],
       configs.sunValidatorAddress,
       1,
@@ -47,10 +47,7 @@ export const getProxyCreationData = async (publicAddress: string) => {
       '0x0000000000000000000000000000000000000000'
     ).encodeABI()
 
-    const proxyFactory = new web3.eth.Contract(ProxyFactoryAbi, configs.proxyFactoryAddress)
-    const txData = proxyFactory.methods.createProxy(configs.gnosisSafeAddress, creationData).encodeABI()
-
-    return txData
+    return creationData
   } catch (error) {
     throw error
   }
