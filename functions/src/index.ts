@@ -61,12 +61,12 @@ export const createProxyContract = functions.https.onRequest(async (request, res
     const txParams = await getProxyCreationData(publicAddress)
 
     try {
-      const txHash = await postBiconomy(
-        publicAddress,
-        [configs.gnosisSafeAddress, txParams],
-        configs.proxyFactoryAddress,
-        '5248cc94-c9ea-4c4c-988e-05f4043b4ef1'
-      )
+      const txHash = await postBiconomy({
+        'toAddress': configs.proxyFactoryAddress,
+        'userAddress': publicAddress,
+        'txParams': [configs.gnosisSafeAddress, txParams],
+        'biconomyMethodKey': '5248cc94-c9ea-4c4c-988e-05f4043b4ef1'
+      })
 
       await addNewUser(
         txHash.toLowerCase(),
@@ -93,12 +93,11 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       publicAddress,
       destinationAddress,
       signature,
-      value,
-      contractWalletAddress
+      value
     } = request.body
     const { authorization } = request.headers
 
-    if (!authorization || !publicAddress || !destinationAddress || !signature || !value || !contractWalletAddress) {
+    if (!authorization || !publicAddress || !destinationAddress || !signature || !value) {
       response.status(400).send('Bad Request!')
       process.exit()
     }
@@ -108,14 +107,8 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       process.exit()
     }
 
-    if (!isValidAddress(publicAddress) || !isValidAddress(destinationAddress) || !isValidAddress(contractWalletAddress)) {
+    if (!isValidAddress(publicAddress) || !isValidAddress(destinationAddress)) {
       response.status(400).send('Invalid address!')
-      process.exit()
-    }
-
-    const isAllowed = await isAllowedToDoMeta(contractWalletAddress)
-    if (!isAllowed) {
-      response.status(400).send('Meta-transactions not allowed!')
       process.exit()
     }
 
@@ -124,13 +117,25 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       response.status(400).send(`${shortenAddress(publicAddress)} user has not contract wallet!`)
       process.exit()
     }
+
+    const isAllowed = await isAllowedToDoMeta(userData.contract)
+    if (!isAllowed) {
+      response.status(400).send('Meta-transactions not allowed!')
+      process.exit()
+    }
+
     console.log('- Validation passed!')
 
     await whitelistAddresses([destinationAddress])
     console.log('- Added to whitelist!')
 
-    const txParams = await getExecuteMethodData(publicAddress, destinationAddress, signature, value, contractWalletAddress)
-    const txHash = await postBiconomy(publicAddress, txParams, userData.contract, 'dfa2d884-10ec-4ad4-924e-0fbfed3605c7')
+    const txParams = await getExecuteMethodData(publicAddress, destinationAddress, signature, value, userData.contract)
+    const txHash = await postBiconomy({
+      'toAddress': userData.contract,
+      'userAddress': publicAddress,
+      'txParams': txParams,
+      'biconomyMethodKey': 'dfa2d884-10ec-4ad4-924e-0fbfed3605c7'
+    })
     response.status(200).send(txHash)
     process.exit()
   } catch (error) {
