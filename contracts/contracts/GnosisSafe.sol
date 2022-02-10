@@ -768,6 +768,7 @@ contract GnosisSafe is MasterCopy, ModuleManager, OwnerManager, SignatureDecoder
             nonce++;
             txHash = keccak256(txHashData);
             checkSignatures(txHash, txHashData, signatures, true);
+            require(sunValidator.allowedToDoMeta(lastOwner), "execTransaction: meta not allowed!");
         }
         require(gasleft() >= safeTxGas, "Not enough gas to execute safe transaction");
         // Use scope here to limit variable lifetime and prevent `stack too deep` errors
@@ -886,7 +887,6 @@ contract GnosisSafe is MasterCopy, ModuleManager, OwnerManager, SignatureDecoder
             );
             lastOwner = currentOwner;
         }
-        require(sunValidator.allowedToDoMeta(lastOwner), "SunWallet: User is not able to do meta transactions!");
     }
 
     /// @dev Allows to estimate a Safe transaction.
@@ -958,6 +958,7 @@ contract GnosisSafe is MasterCopy, ModuleManager, OwnerManager, SignatureDecoder
         } else {
             // consumeHash needs to be false, as the state should not be changed
             checkSignatures(messageHash, _data, _signature, false);
+            require(sunValidator.allowedToDoMeta(lastOwner), "isValidSignature: meta not allowed!");
         }
         return EIP1271_MAGIC_VALUE;
     }
