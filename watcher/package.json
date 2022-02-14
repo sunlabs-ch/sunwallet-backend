@@ -12,7 +12,7 @@
     "gnosis",
     "native"
   ],
-  "author": "Ararat Tonoyan",
+  "author": "SW DAO",
   "main": "watcher.js",
   "scripts": {
     "start": "node index.js",

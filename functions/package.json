@@ -12,7 +12,7 @@
     "gnosis",
     "native"
   ],
-  "author": "Ararat Tonoyan",
+  "author": "SW DAO",
   "scripts": {
     "lint": "eslint \"src/**/*\"",
     "build": "tsc",
