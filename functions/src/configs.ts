@@ -15,6 +15,5 @@ export const configs = {
 
   // Smart contract addresses
   proxyFactoryAddress: envValues.env.proxy_factory_contract,
-  gnosisSafeAddress: envValues.env.gnosis_safe_address,
-  sunValidatorAddress: envValues.env.sun_validator
+  gnosisSafeAddress: envValues.env.gnosis_safe_address
 }

@@ -3,7 +3,7 @@ import * as functions from 'firebase-functions'
 // Services
 const { web3 } = require('./services/Web3Service')
 const { postBiconomy, whitelistAddresses } = require('./services/BiconomyService')
-const { getProxyContractNonce, isAllowedToDoMeta, getProxyCreationData, getExecuteMethodData } = require('./services/ContractService')
+const { getProxyContractNonce, getProxySetupData, getExecuteMethodData } = require('./services/ContractService')
 const { addNewUser, fetchUserData, updateUserTransactionStatus } = require('./services/DbService')
 
 // Utils
@@ -58,13 +58,13 @@ export const createProxyContract = functions.https.onRequest(async (request, res
       }
     }
 
-    const txParams = await getProxyCreationData(publicAddress)
+    const proxySetupData = await getProxySetupData(publicAddress)
 
     try {
       const txHash = await postBiconomy({
         'toAddress': configs.proxyFactoryAddress,
         'userAddress': publicAddress,
-        'txParams': [configs.gnosisSafeAddress, txParams],
+        'txParams': [configs.gnosisSafeAddress, proxySetupData],
         'biconomyMethodKey': '5248cc94-c9ea-4c4c-988e-05f4043b4ef1'
       })
 
@@ -117,14 +117,6 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       response.status(400).send(`${shortenAddress(publicAddress)} user has not contract wallet!`)
       process.exit()
     }
-
-    const isAllowed = await isAllowedToDoMeta(userData.contract)
-    if (!isAllowed) {
-      response.status(400).send('Meta-transactions not allowed!')
-      process.exit()
-    }
-
-    console.log('- Validation passed!')
 
     await whitelistAddresses([destinationAddress])
     console.log('- Added to whitelist!')

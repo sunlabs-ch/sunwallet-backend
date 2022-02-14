@@ -1,9 +1,9 @@
 {
-  "name": "SunWalletWatcher",
+  "name": "SWDAOWalletWatcher",
   "version": "1.0.0",
-  "description": "SunWallet watcher, which detect new SCW wallets creations and updates the database",
+  "description": "SWDAO Wallet watcher, which detect new SCW wallets creations and updates the database",
   "keywords": [
-    "sun-wallet",
+    "SWDAO-wallet",
     "meta-transactions",
     "gasless",
     "dapp",
