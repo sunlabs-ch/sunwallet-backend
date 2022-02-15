@@ -65,7 +65,7 @@ export const createProxyContract = functions.https.onRequest(async (request, res
         'toAddress': configs.proxyFactoryAddress,
         'userAddress': publicAddress,
         'txParams': [configs.gnosisSafeAddress, proxySetupData],
-        'biconomyMethodKey': '5248cc94-c9ea-4c4c-988e-05f4043b4ef1'
+        'biconomyMethodKey': configs.biconomyCreateProxyApiId
       })
 
       await addNewUser(
@@ -126,7 +126,7 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
       'toAddress': userData.contract,
       'userAddress': publicAddress,
       'txParams': txParams,
-      'biconomyMethodKey': 'dfa2d884-10ec-4ad4-924e-0fbfed3605c7'
+      'biconomyMethodKey': configs.biconomyExecTxApiId
     })
     response.status(200).send(txHash)
     process.exit()
