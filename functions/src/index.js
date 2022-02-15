@@ -13,7 +13,8 @@ const { GnosisSafeAbi } = require('./utils/abi')
 
 // Configs
 const { configs } = require('./configs')
-const { ContractState } = require('./constants/index')
+const { ContractState } = require('./constants/index');
+const { user } = require("firebase-functions/v1/auth");
 
 exports.createProxyContract = functions.https.onRequest(async (request, response) => {
   try {
@@ -62,7 +63,7 @@ exports.createProxyContract = functions.https.onRequest(async (request, response
     const proxySetupData = await getProxySetupData(publicAddress)
 
     try {
-      const txHash = await postBiconomy({
+      const transaction = await postBiconomy({
         'toAddress': configs.proxyFactoryAddress,
         'userAddress': publicAddress,
         'txParams': [configs.gnosisSafeAddress, proxySetupData],
@@ -70,13 +71,13 @@ exports.createProxyContract = functions.https.onRequest(async (request, response
       })
 
       await addNewUser(
-        txHash.toLowerCase(),
+        transaction.toLowerCase(),
         web3.utils.toChecksumAddress(publicAddress),
         ContractState.PENDING,
         null  // Contract address will be added after tx confirmation
       )
 
-      response.status(200).send(txHash)
+      response.status(200).send({ transaction })
       process.exit()
     } catch (error) {
       if (userData) await updateUserTransactionStatus(userData.id, ContractState.FAILED)
@@ -123,13 +124,13 @@ exports.executeMetaTx = functions.https.onRequest(async (request, response) => {
     console.log('- Added to whitelist!')
 
     const txParams = await getExecuteMethodData(publicAddress, destinationAddress, signature, value, userData.contract)
-    const txHash = await postBiconomy({
+    const transaction = await postBiconomy({
       'toAddress': userData.contract,
       'userAddress': publicAddress,
       'txParams': txParams,
       'biconomyMethodKey': configs.biconomyExecTxApiId
     })
-    response.status(200).send(txHash)
+    response.status(200).send({ transaction })
     process.exit()
   } catch (error) {
     response.status(502).send('Execution error!')
@@ -160,25 +161,27 @@ exports.getWalletInfo = functions.https.onRequest(async (request, response) => {
     console.log('- Validation passed!')
 
     const userData = await fetchUserData(publicAddress)
-    if (userData) {
-      let nonce = null
-      let contract = null
-      const transaction = userData.transaction
 
+    let contract = null,
+      transaction = null,
+      nonce = null
+
+    if (userData) {
       if (userData.contract) {
         contract = userData.contract
         nonce = await getProxyContractNonce(contract)
       }
 
-      response.status(200).send({
-        nonce,
-        contract,
-        transaction
-      })
-      process.exit()
+      if (userData.transaction) {
+        transaction = userData.transaction
+      }
     }
 
-    response.status(404).send(`${shortenAddress(publicAddress)} user has not contract wallet!`)
+    response.status(200).send({
+      nonce,
+      contract,
+      transaction
+    })
     process.exit()
   } catch (error) {
     response.status(502).send('Bad Gateway!')
