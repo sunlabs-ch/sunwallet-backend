@@ -12,7 +12,7 @@ export const biconomy = new Biconomy(
   }
 )
 
-export const whitelistAddresses = async (destinationAddresses: string []) => {
+export const whitelistAddresses = async (destinationAddresses) => {
   try {
     const biconomyWhitelistEndpoint = 'https://api.biconomy.io/api/v1/dapp/whitelist/destination'
 
@@ -31,27 +31,27 @@ export const whitelistAddresses = async (destinationAddresses: string []) => {
   }
 }
 
-export const postBiconomy = (data: any) => {
+export const postBiconomy = (data) => {
   try {
     const body = JSON.stringify({
       'to': data.toAddress,
       'userAddress': data.userAddress,
       'apiId': data.biconomyMethodKey,
-      'params': data.txParams,
+      'params': data.txParams
     })
 
     const headerSettings = {
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': configs.biconomyApiKey,
-      },
+        'x-api-key': configs.biconomyApiKey
+      }
     }
 
     return new Promise((resolve, reject) => {
       axios
         .post('https://api.biconomy.io/api/v2/meta-tx/native', body, headerSettings)
-        .then((res: any) => resolve(res.data.txHash))
-        .catch((error: any) => reject(error))
+        .then((res) => resolve(res.data.txHash))
+        .catch((error) => reject(error))
     })
   } catch (error) {
     throw error

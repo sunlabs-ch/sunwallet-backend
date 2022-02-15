@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin'
 admin.initializeApp()
 const db = admin.firestore()
 
-export const addNewUser = async (transaction: string, wallet: string, status: string, contract: any) => {
+export const addNewUser = async (transaction, wallet, status, contract) => {
   try {
     await db
       .collection('usersContracts')
@@ -21,7 +21,7 @@ export const addNewUser = async (transaction: string, wallet: string, status: st
   }
 }
 
-export const fetchUserData = async (publicAddress: string) => {
+export const fetchUserData = async (publicAddress) => {
   try {
     const result = await db
       .collection('usersContracts')
@@ -49,7 +49,7 @@ export const fetchUserData = async (publicAddress: string) => {
   }
 }
 
-export const updateUserTransactionStatus = async (userId: any, status: string) => {
+export const updateUserTransactionStatus = async (userId, status) => {
   try {
     await db
       .collection('usersContracts')
@@ -65,7 +65,7 @@ export const updateUserTransactionStatus = async (userId: any, status: string) =
   }
 }
 
-export const updateUserTransactionHash = async (userId: any, transaction: string) => {
+export const updateUserTransactionHash = async (userId, transaction) => {
   try {
     await db
       .collection('usersContracts')

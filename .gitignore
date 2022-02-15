@@ -67,4 +67,5 @@ node_modules/
 .env
 
 functions/src/env.json
+functions/lib
 biconomy-gnosis.json

@@ -1,4 +1,13 @@
-import * as functions from 'firebase-functions'
+const functions = require("firebase-functions");
+
+// // Create and Deploy Your First Cloud Functions
+// // https://firebase.google.com/docs/functions/write-firebase-functions
+//
+// exports.helloWorld = functions.https.onRequest((request, response) => {
+//   functions.logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
+
 
 // Services
 const { web3 } = require('./services/Web3Service')
@@ -220,7 +229,7 @@ export const getSignature = functions.https.onRequest(async (request, response) 
     const operation = 0
     const gasPrice = 0
     const gasToken = '0x0000000000000000000000000000000000000000'
-    let txGasEstimate:any = 0
+    let txGasEstimate = 0
 
     try {
         const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
@@ -231,7 +240,7 @@ export const getSignature = functions.https.onRequest(async (request, response) 
           from: proxyContractAddress,
           data: estimateData,
           gasPrice: 0
-        }).catch((error: any) => {
+        }).catch((error) => {
           throw error
         })
 

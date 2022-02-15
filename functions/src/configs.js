@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions'
-const envValues = Object.keys(functions.config()).length ? functions.config() : require('../src/env.json')
+const envValues = Object.keys(functions.config()).length ? functions.config() : require('./env.json')
 
 export const configs = {
   // Infura RPC provder and private key of cloud signer

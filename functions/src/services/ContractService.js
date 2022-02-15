@@ -10,7 +10,7 @@ const { GnosisSafeAbi } = require('../utils/abi')
 // Configs
 const { configs } = require('../configs')
 
-export const getProxyContractNonce = async (proxyAddress: string) => {
+export const getProxyContractNonce = async (proxyAddress) => {
   try {
     const proxyContractInstance = new web3.eth.Contract(GnosisSafeAbi, proxyAddress)
     const nonce = await proxyContractInstance.methods.nonce().call()
@@ -21,7 +21,7 @@ export const getProxyContractNonce = async (proxyAddress: string) => {
   }
 }
 
-export const getProxySetupData = async (publicAddress: string) => {
+export const getProxySetupData = async (publicAddress) => {
   try {
     const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
     const creationData = gnosisSafeMasterCopy.methods.setup(
@@ -41,13 +41,13 @@ export const getProxySetupData = async (publicAddress: string) => {
   }
 }
 
-export const getExecuteMethodData = async (publicAddress: string, destinationAddress: string, signature: any, value: any, contractWalletAddress: string) => {
+export const getExecuteMethodData = async (publicAddress, destinationAddress, signature, value, contractWalletAddress) => {
   try {
     const valueWei = toWei(value)
     const operation = 0
     const gasPrice = 0
     const gasToken = '0x0000000000000000000000000000000000000000'
-    let txGasEstimate: any = 0
+    let txGasEstimate = 0
 
     try {
       const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
@@ -58,7 +58,7 @@ export const getExecuteMethodData = async (publicAddress: string, destinationAdd
         from: contractWalletAddress,
         data: estimateData,
         gasPrice: 0
-      }).catch((error: any) => {
+      }).catch((error) => {
         throw error
       })
 
@@ -70,7 +70,7 @@ export const getExecuteMethodData = async (publicAddress: string, destinationAdd
 
     // Get estimated base gas (Gas costs for that are independent of the transaction execution(e.g. base transaction fee, signature check, payment of the refund))
     const baseGasEstimate = 0
-    const sig: any = ethers.utils.splitSignature(signature)
+    const sig = ethers.utils.splitSignature(signature)
     const newSignature = `${sig.r}${sig.s.substring(2)}${Number(sig.v + 4).toString(16)}`
 
     return [
