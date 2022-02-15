@@ -10,7 +10,7 @@ const { GnosisSafeAbi } = require('../utils/abi')
 // Configs
 const { configs } = require('../configs')
 
-export const getProxyContractNonce = async (proxyAddress) => {
+exports.getProxyContractNonce = async (proxyAddress) => {
   try {
     const proxyContractInstance = new web3.eth.Contract(GnosisSafeAbi, proxyAddress)
     const nonce = await proxyContractInstance.methods.nonce().call()
@@ -21,7 +21,7 @@ export const getProxyContractNonce = async (proxyAddress) => {
   }
 }
 
-export const getProxySetupData = async (publicAddress) => {
+exports.getProxySetupData = async (publicAddress) => {
   try {
     const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
     const creationData = gnosisSafeMasterCopy.methods.setup(
@@ -41,7 +41,7 @@ export const getProxySetupData = async (publicAddress) => {
   }
 }
 
-export const getExecuteMethodData = async (publicAddress, destinationAddress, signature, value, contractWalletAddress) => {
+exports.getExecuteMethodData = async (publicAddress, destinationAddress, signature, value, contractWalletAddress) => {
   try {
     const valueWei = toWei(value)
     const operation = 0

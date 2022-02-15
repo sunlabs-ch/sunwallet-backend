@@ -3,7 +3,7 @@ const axios = require('axios')
 
 const { configs } = require('../configs')
 
-export const biconomy = new Biconomy(
+exports.biconomy = new Biconomy(
   configs.provider,
   {
     apiKey: configs.biconomyApiKey,
@@ -12,7 +12,7 @@ export const biconomy = new Biconomy(
   }
 )
 
-export const whitelistAddresses = async (destinationAddresses) => {
+exports.whitelistAddresses = async (destinationAddresses) => {
   try {
     const biconomyWhitelistEndpoint = 'https://api.biconomy.io/api/v1/dapp/whitelist/destination'
 
@@ -31,7 +31,7 @@ export const whitelistAddresses = async (destinationAddresses) => {
   }
 }
 
-export const postBiconomy = (data) => {
+exports.postBiconomy = (data) => {
   try {
     const body = JSON.stringify({
       'to': data.toAddress,

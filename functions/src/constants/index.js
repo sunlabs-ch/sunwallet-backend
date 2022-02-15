@@ -1,4 +1,4 @@
-export const ContractState = Object.freeze({
+exports.ContractState = Object.freeze({
   SUCCESS: 'SUCCESS',
   PENDING: 'PENDING',
   FAILED: 'FAILED'

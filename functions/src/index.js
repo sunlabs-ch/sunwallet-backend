@@ -1,13 +1,5 @@
 const functions = require("firebase-functions");
-
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
+require('dotenv').config();
 
 // Services
 const { web3 } = require('./services/Web3Service')
@@ -23,7 +15,7 @@ const { GnosisSafeAbi } = require('./utils/abi')
 const { configs } = require('./configs')
 const { ContractState } = require('./constants/index')
 
-export const createProxyContract = functions.https.onRequest(async (request, response) => {
+exports.createProxyContract = functions.https.onRequest(async (request, response) => {
   try {
     const { publicAddress } = request.body
     const { authorization } = request.headers
@@ -96,7 +88,7 @@ export const createProxyContract = functions.https.onRequest(async (request, res
   }
 })
 
-export const executeMetaTx = functions.https.onRequest(async (request, response) => {
+exports.executeMetaTx = functions.https.onRequest(async (request, response) => {
   try {
     const {
       publicAddress,
@@ -145,7 +137,7 @@ export const executeMetaTx = functions.https.onRequest(async (request, response)
   }
 })
 
-export const getWalletInfo = functions.https.onRequest(async (request, response) => {
+exports.getWalletInfo = functions.https.onRequest(async (request, response) => {
   try {
     const { publicAddress } = request.body
     const { authorization } = request.headers
@@ -197,7 +189,7 @@ export const getWalletInfo = functions.https.onRequest(async (request, response)
 // FOR DEMO PURPOSES ONLY
 // This logic should be handled on the frontend/mobile side
 // This cloud method should be removed after production release!
-export const getSignature = functions.https.onRequest(async (request, response) => {
+exports.getSignature = functions.https.onRequest(async (request, response) => {
   try {
     const {
       publicAddress,
