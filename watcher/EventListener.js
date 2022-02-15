@@ -10,7 +10,7 @@ console.log('[success] DB connected!')
 
 const factoryAbi = require('./abi.json')
 const {
-  FACTORY_ADDRESS,
+  PROXY_FACTORY_ADDRESS,
   BICONOMY_WHITELIST_TOKEN
 } = process.env
 
@@ -127,7 +127,7 @@ class EventListener {
     // Contracts
     this._FactoryContract = new web3.eth.Contract(
       factoryAbi,
-      FACTORY_ADDRESS
+      PROXY_FACTORY_ADDRESS
     )
 
     // Handle websocket disconnects
