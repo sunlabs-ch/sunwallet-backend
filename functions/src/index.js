@@ -14,7 +14,7 @@ const { GnosisSafeAbi } = require('./utils/abi')
 // Configs
 const { configs } = require('./configs')
 const { ContractState } = require('./constants/index');
-const { user } = require("firebase-functions/v1/auth");
+
 
 exports.createProxyContract = functions.https.onRequest(async (request, response) => {
   try {
