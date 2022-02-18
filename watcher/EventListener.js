@@ -65,55 +65,42 @@ const hexStripZeros = (value) => {
   return value
 }
 
-const fixTrailingZero = (address) => {
-  let trailingZero = ''
-
-  for (let index = 0; index < (42 - address.length); index++) {
-    trailingZero += '0'
-  }
-
-  return `${address.substring(0, 2)}${trailingZero}${address.substring(2, address.length)}`
-}
-
 const publishEvent = (eventName, event) => {
   console.log('[success] New event received!', event.transactionHash)
 
   if (eventName === Events['ProxyCreation']) {
-    let localProxyAddress = hexStripZeros(event.raw.data)
-    if (localProxyAddress.length < 42) {
-      localProxyAddress = fixTrailingZero(localProxyAddress)
-    }
-
+    const contractWalletAddress = hexStripZeros(event.raw.data).substring(0, 42)
     const txHash = event.transactionHash.toLowerCase()
 
     if (!processedTxs[txHash]) {
       db
-      .collection('usersContracts')
-      .where('transaction', '==', txHash)
+      .collection('users')
+      .where('creationTx', '==', txHash)
       .where('status', '==', ContractState.PENDING)
       .get()
       .then(async (result) => {
         if (result && result.docs[0] && result.docs[0].id) {
           console.log('User ID =>', result.docs[0].id)
-          console.log('New proxy contract =>', localProxyAddress)
-          console.log('-----------')
+          console.log('New proxy contract =>', contractWalletAddress)
 
           await db
-            .collection('usersContracts')
+            .collection('users')
             .doc(result.docs[0].id)
             .update({
               status: ContractState.SUCCESS,
-              contract: localProxyAddress
+              contract: contractWalletAddress,
+              whitelisted: true
             })
 
-          await whitelistBiconomy([localProxyAddress])
+          await whitelistBiconomy([contractWalletAddress])
           processedTxs[txHash] = true
+          console.log('Whitelisted')
+          console.log('-----------')
         }
       })
     }
   }
 }
-
 class EventListener {
   constructor(
     web3,

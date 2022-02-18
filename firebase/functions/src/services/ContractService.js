@@ -54,7 +54,7 @@ exports.getExecuteMethodData = async (userWallet, destinationAddress, signature,
       const estimateData = gnosisSafeMasterCopy.methods.requiredTxGas(destinationAddress, valueWei, '0x0', operation).encodeABI()
 
       const estimateResponse = await web3.eth.call({
-        to: contractWalletAddress,
+        to: contractWalletAddress, //TODO, is it right?
         from: contractWalletAddress,
         data: estimateData,
         gasPrice: 0

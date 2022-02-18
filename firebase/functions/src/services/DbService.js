@@ -52,39 +52,6 @@ exports.fetchUserData = async (userWallet) => {
   }
 }
 
-exports.updateUserTransactionStatus = async (userId, status) => {
-  try {
-    await db
-      .collection(mainCollection)
-      .doc(userId)
-      .update({
-        status
-      })
-
-    return
-  } catch (error) {
-    console.log('DB::UPDATE_USER_TRANSACTION_STATUS error =>', error)
-    throw error
-  }
-}
-
-exports.updateUserWhitelistedStatus = async (userId) => {
-  try {
-    await db
-      .collection(mainCollection)
-      .doc(userId)
-      .update({
-        whitelisted: true
-      })
-
-    return
-  } catch (error) {
-    console.log('DB::UPDATE_USER_TRANSACTION_STATUS error =>', error)
-    throw error
-  }
-}
-
-
 exports.updateUserTransactionHash = async (userId, creationTx) => {
   try {
     await db

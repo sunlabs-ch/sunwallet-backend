@@ -1,6 +1,5 @@
 const { web3 } = require('../services/Web3Service')
 const { fetchUserData } = require('../services/DbService')
-const { getContractWalletNonce } = require('../services/ContractService')
 
 exports.isValidAddress = (address) => {
   return web3.utils.isAddress(address)
@@ -35,7 +34,8 @@ exports.getUserData = async (userWallet) => {
     user.whitelisted = userData.whitelisted
 
     if (userData.contract) {
-      user.nonce = await getContractWalletNonce(contract)
+      const { getContractWalletNonce } = require('../services/ContractService')
+      user.nonce = await getContractWalletNonce(user.contract)
     }
   }
 

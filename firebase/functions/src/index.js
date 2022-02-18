@@ -3,16 +3,16 @@ const functions = require("firebase-functions");
 
 // Services
 const { web3 } = require('./services/Web3Service')
-const { postBiconomy, whitelistBiconomy } = require('./services/BiconomyService')
+const { addNewUser } = require('./services/DbService')
+const {
+  postBiconomy,
+  whitelistBiconomy
+} = require('./services/BiconomyService')
 const {
   getContractWalletNonce,
   getContractWalletSetupData,
   getExecuteMethodData
 } = require('./services/ContractService')
-const {
-  addNewUser,
-  updateUserWhitelistedStatus
-} = require('./services/DbService')
 
 // Utils
 const {
@@ -112,16 +112,14 @@ exports.executeMetaTx = functions.https.onRequest(async(request, response) => {
       process.exit()
     }
 
-    const userData = await fetchUserData(userWallet)
+    const userData = await getUserData(userWallet)
     if (!userData || !userData.contract) {
       response.status(400).send(`${shortenAddress(userWallet)} user has not contract wallet!`)
       process.exit()
     }
 
-    if (userData && !userData.whitelisted) {
-      await whitelistBiconomy([destinationAddress])
-      await updateUserWhitelistedStatus(userData.id)
-    }
+    // Whitelist destination address before meta execution
+    await whitelistBiconomy([destinationAddress])
 
     const txParams = await getExecuteMethodData(
       userWallet,
@@ -130,6 +128,7 @@ exports.executeMetaTx = functions.https.onRequest(async(request, response) => {
       value,
       userData.contract
     )
+
     const transaction = await postBiconomy({
       'toAddress': userData.contract,
       'userAddress': userWallet,
