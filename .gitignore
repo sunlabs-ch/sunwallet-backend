@@ -66,5 +66,5 @@ node_modules/
 # dotenv environment variables file
 .env
 
-functions/lib
-biconomy-gnosis.json
+firebase/functions/lib
+watcher/biconomy-gnosis.json

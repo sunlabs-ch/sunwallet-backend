@@ -7,12 +7,12 @@ exports.biconomy = new Biconomy(
   configs.provider,
   {
     apiKey: configs.biconomyApiKey,
-    debug: false,
+    debug: true,
     strict: true
   }
 )
 
-exports.whitelistAddresses = async (destinationAddresses) => {
+exports.whitelistBiconomy = async (destinationAddresses) => {
   try {
     const biconomyWhitelistEndpoint = 'https://api.biconomy.io/api/v1/dapp/whitelist/destination'
 

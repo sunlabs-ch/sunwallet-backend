@@ -10,10 +10,10 @@ const { GnosisSafeAbi } = require('../utils/abi')
 // Configs
 const { configs } = require('../configs')
 
-exports.getProxyContractNonce = async (proxyAddress) => {
+exports.getContractWalletNonce = async (walletContract) => {
   try {
-    const proxyContractInstance = new web3.eth.Contract(GnosisSafeAbi, proxyAddress)
-    const nonce = await proxyContractInstance.methods.nonce().call()
+    const contractWalletInstance = new web3.eth.Contract(GnosisSafeAbi, walletContract)
+    const nonce = await contractWalletInstance.methods.nonce().call()
 
     return nonce
   } catch (error) {
@@ -21,11 +21,11 @@ exports.getProxyContractNonce = async (proxyAddress) => {
   }
 }
 
-exports.getProxySetupData = async (publicAddress) => {
+exports.getContractWalletSetupData = async (userWallet) => {
   try {
     const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
     const creationData = gnosisSafeMasterCopy.methods.setup(
-      [publicAddress],
+      [userWallet],
       1,
       '0x0000000000000000000000000000000000000000',
       '0x0',
@@ -41,7 +41,7 @@ exports.getProxySetupData = async (publicAddress) => {
   }
 }
 
-exports.getExecuteMethodData = async (publicAddress, destinationAddress, signature, value, contractWalletAddress) => {
+exports.getExecuteMethodData = async (userWallet, destinationAddress, signature, value, contractWalletAddress) => {
   try {
     const valueWei = toWei(value)
     const operation = 0
@@ -82,7 +82,7 @@ exports.getExecuteMethodData = async (publicAddress, destinationAddress, signatu
       baseGasEstimate,
       gasPrice,
       gasToken,
-      publicAddress,
+      userWallet,
       newSignature
     ]
   } catch (error) {

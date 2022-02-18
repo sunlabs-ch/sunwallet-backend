@@ -38,7 +38,7 @@ const subscribeLogEvent = (
   )
 }
 
-const whitelistAddresses = async (addresses) => {
+const whitelistBiconomy = async (addresses) => {
   try {
     const biconomyWhitelistEndpoint = 'https://api.biconomy.io/api/v1/dapp/whitelist/proxy-contracts'
 
@@ -106,7 +106,7 @@ const publishEvent = (eventName, event) => {
               contract: localProxyAddress
             })
 
-          await whitelistAddresses([localProxyAddress])
+          await whitelistBiconomy([localProxyAddress])
           processedTxs[txHash] = true
         }
       })
