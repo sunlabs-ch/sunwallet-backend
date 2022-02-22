@@ -26,7 +26,7 @@ const { GnosisSafeAbi } = require('./utils/abi')
 
 // Configs
 const { configs } = require('./configs')
-const { ContractState } = require('./constants/index');
+const { ContractState } = require('./constants/index')
 
 exports.createContractWallet = functions.https.onRequest(async(request, response) => {
   try {

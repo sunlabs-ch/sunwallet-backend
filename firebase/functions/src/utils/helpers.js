@@ -1,5 +1,6 @@
 const { web3 } = require('../services/Web3Service')
 const { fetchUserData } = require('../services/DbService')
+const { ContractState } = require('../constants/index')
 
 exports.isValidAddress = (address) => {
   return web3.utils.isAddress(address)
@@ -19,7 +20,7 @@ exports.shortenAddress = (address, charsStart = 3, charsEnd = 4) => {
 exports.getUserData = async (userWallet) => {
   let user = {
     nonce: 0,
-    status: null,
+    status: ContractState.NOT_FOUND,
     contract: null,
     creationTx: null,
     whitelisted: false

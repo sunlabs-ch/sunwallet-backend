@@ -19,6 +19,7 @@ const Events = Object.freeze({
 })
 
 const ContractState = Object.freeze({
+  NOT_FOUND: 'NOT_FOUND',
   SUCCESS: 'SUCCESS',
   PENDING: 'PENDING',
   FAILED: 'FAILED'
