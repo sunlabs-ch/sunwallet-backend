@@ -11,7 +11,8 @@ const {
 const {
   getContractWalletNonce,
   getContractWalletSetupData,
-  getExecuteMethodData
+  getExecuteMethodData,
+  getRequiredGasTx
 } = require('./services/ContractService')
 
 // Utils
@@ -91,13 +92,14 @@ exports.executeMetaTx = functions.https.onRequest(async(request, response) => {
       userWallet,
       destinationAddress,
       signature,
-      value
+      value,
+      data
     } = request.body
     const {
       authorization
     } = request.headers
 
-    if (!authorization || !userWallet || !destinationAddress || !signature || !value) {
+    if (!authorization || !userWallet || !destinationAddress || !signature || !value || !data) {
       response.status(400).send('Bad Request!')
       process.exit()
     }
@@ -126,7 +128,8 @@ exports.executeMetaTx = functions.https.onRequest(async(request, response) => {
       destinationAddress,
       signature,
       value,
-      userData.contract
+      userData.contract,
+      data
     )
 
     const transaction = await postBiconomy({
@@ -140,6 +143,7 @@ exports.executeMetaTx = functions.https.onRequest(async(request, response) => {
     })
     process.exit()
   } catch (error) {
+    console.log(error)
     response.status(502).send('Execution error!')
     process.exit()
   }
@@ -188,10 +192,11 @@ exports.getSignature = functions.https.onRequest(async(request, response) => {
       userWallet,
       walletPrivateKey,
       toAddress,
-      value
+      value,
+      data
     } = request.body
 
-    if (!userWallet || !toAddress || !walletPrivateKey || !value) {
+    if (!userWallet || !toAddress || !walletPrivateKey || !value || !data) {
       response.status(400).send('Bad Request!')
       process.exit()
     }
@@ -214,32 +219,13 @@ exports.getSignature = functions.https.onRequest(async(request, response) => {
     const operation = 0
     const gasPrice = 0
     const gasToken = '0x0000000000000000000000000000000000000000'
-    let txGasEstimate = 0
-
-    try {
-      const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
-      const estimateData = gnosisSafeMasterCopy.methods.requiredTxGas(toAddress, valueWei, '0x', operation).encodeABI()
-
-      const estimateResponse = await web3.eth.call({
-        to: contractWallet,
-        from: contractWallet,
-        data: estimateData,
-        gasPrice: 0
-      }).catch((error) => {
-        throw error
-      })
-
-      txGasEstimate = new web3.utils.toBN(estimateResponse.substring(138), 16)
-      txGasEstimate = txGasEstimate.add(new web3.utils.toBN(10000), 16).toString()
-    } catch (error) {
-      console.log('Could not estimate, because of ' + error)
-    }
+    const txGasEstimate = await getRequiredGasTx(contractWallet, toAddress, valueWei, data, operation)
 
     const nonce = await getContractWalletNonce(contractWallet)
     const transaction = await contractWalletInstance.methods.getTransactionHash(
       toAddress.toLowerCase(),
       valueWei,
-      '0x',
+      data,
       operation,
       txGasEstimate,
       0,
