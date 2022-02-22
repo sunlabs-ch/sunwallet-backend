@@ -50,22 +50,23 @@ exports.getExecuteMethodData = async (userWallet, destinationAddress, signature,
     let txGasEstimate = 0
 
     try {
-      const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
-      const estimateData = gnosisSafeMasterCopy.methods.requiredTxGas(destinationAddress, valueWei, '0x0', operation).encodeABI()
-
+      const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, contractWalletAddress)
+      const estimateData = gnosisSafeMasterCopy.methods.requiredTxGas(destinationAddress, valueWei, '0x', operation).encodeABI()
       const estimateResponse = await web3.eth.call({
-        to: contractWalletAddress, //TODO, is it right?
+        to: contractWalletAddress,
         from: contractWalletAddress,
         data: estimateData,
         gasPrice: 0
-      }).catch((error) => {
-        throw error
       })
 
-      txGasEstimate = new web3.utils.toBN(estimateResponse.substring(138), 16)
-      txGasEstimate = txGasEstimate.add(new web3.utils.toBN(10000), 16).toString()
+      // https://docs.gnosis.io/safe/docs/contracts_tx_execution/#safe-transaction-gas-limit-estimation
+      // The value returned by requiredTxGas is encoded in a revert error message. For retrieving the hex
+      // encoded uint value the first 68 bytes of the error message need to be removed.
+      txGasEstimate = parseInt(estimateResponse.substring(138), 16)
+      // Multiply with 64/63 due to EIP-150 (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-150.md)
+      txGasEstimate = Math.ceil((txGasEstimate * 64) / 63)
     } catch (error) {
-      throw error
+      console.log('Could not estimate, because of' + error)
     }
 
     // Get estimated base gas (Gas costs for that are independent of the transaction execution(e.g. base transaction fee, signature check, payment of the refund))
@@ -76,7 +77,7 @@ exports.getExecuteMethodData = async (userWallet, destinationAddress, signature,
     return [
       destinationAddress,
       valueWei,
-      '0x0',
+      '0x',
       operation,
       txGasEstimate,
       baseGasEstimate,

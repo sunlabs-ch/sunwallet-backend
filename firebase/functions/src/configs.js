@@ -5,8 +5,8 @@ exports.configs = {
   // Biconomy values
   biconomyApiKey: process.env.BICONOMY_API_KEY,
   biconomyWhitelistToken: process.env.BICONOMY_WHITELIST_TOKEN,
-  biconomyExecTxApiId: '8bf5bc81-c159-46db-bd4d-84549e366165',
-  biconomyCreateProxyApiId: '12d2a1b4-b274-4771-9d5a-9fd6d89b3f94',
+  biconomyExecTxApiId: '5f202bbe-a5ff-4bcc-a593-b50e1fb79218',
+  biconomyCreateProxyApiId: '43d96227-f32e-4020-bd8c-021793b5ac98',
 
   // Generated bearer auth for endpoint
   bearerAuthToken: process.env.BEARER_AUTH,

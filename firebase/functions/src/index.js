@@ -218,7 +218,7 @@ exports.getSignature = functions.https.onRequest(async(request, response) => {
 
     try {
       const gnosisSafeMasterCopy = new web3.eth.Contract(GnosisSafeAbi, configs.gnosisSafeAddress)
-      const estimateData = gnosisSafeMasterCopy.methods.requiredTxGas(toAddress, valueWei, '0x0', operation).encodeABI()
+      const estimateData = gnosisSafeMasterCopy.methods.requiredTxGas(toAddress, valueWei, '0x', operation).encodeABI()
 
       const estimateResponse = await web3.eth.call({
         to: contractWallet,
@@ -231,13 +231,15 @@ exports.getSignature = functions.https.onRequest(async(request, response) => {
 
       txGasEstimate = new web3.utils.toBN(estimateResponse.substring(138), 16)
       txGasEstimate = txGasEstimate.add(new web3.utils.toBN(10000), 16).toString()
-    } catch (e) {}
+    } catch (error) {
+      console.log('Could not estimate, because of ' + error)
+    }
 
     const nonce = await getContractWalletNonce(contractWallet)
     const transaction = await contractWalletInstance.methods.getTransactionHash(
       toAddress.toLowerCase(),
       valueWei,
-      '0x0',
+      '0x',
       operation,
       txGasEstimate,
       0,

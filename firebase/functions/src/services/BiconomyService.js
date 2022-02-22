@@ -7,8 +7,7 @@ exports.biconomy = new Biconomy(
   configs.provider,
   {
     apiKey: configs.biconomyApiKey,
-    debug: true,
-    strict: true
+    debug: false
   }
 )
 
