@@ -44,13 +44,12 @@ exports.getContractWalletSetupData = async (userWallet) => {
 exports.getExecuteMethodData = async (userWallet, destinationAddress, signature, value, contractWalletAddress, data) => {
   try {
     const valueWei = toWei(value)
+    const baseGasEstimate = 0 // Get estimated base gas (Gas costs for that are independent of the transaction execution(e.g. base transaction fee, signature check, payment of the refund))
     const operation = 0
     const gasPrice = 0
     const gasToken = '0x0000000000000000000000000000000000000000'
     const txGasEstimate = await this.getRequiredGasTx(contractWalletAddress, destinationAddress, valueWei, data, operation)
 
-    // Get estimated base gas (Gas costs for that are independent of the transaction execution(e.g. base transaction fee, signature check, payment of the refund))
-    const baseGasEstimate = 0
     const sig = ethers.utils.splitSignature(signature)
     const newSignature = `${sig.r}${sig.s.substring(2)}${Number(sig.v + 4).toString(16)}`
 
