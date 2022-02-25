@@ -51,20 +51,20 @@ module.exports = {
      network_id: "*",       // Any network (default: none)
     },
 
-    mainnet: {
-      provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${infuraKey}`),
-      network_id: 1,       // Ropsten's id
-      gas: 5500000,        // Ropsten has a lower block limit than mainnet
-      confirmations: 1,    // # of confs to wait between deployments. (default: 0)
+    matic: {
+      provider: () => new HDWalletProvider(mnemonic, `https://polygon-rpc.com/`),
+      network_id: 137,     // Matic's id
+      gas: 5500000,        // Matic has a lower block limit than mainnet
+      confirmations: 0,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
-    ropsten: {
-      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${infuraKey}`),
-      network_id: 3,       // Ropsten's id
-      gas: 5500000,        // Ropsten has a lower block limit than mainnet
-      confirmations: 1,    // # of confs to wait between deployments. (default: 0)
+    mumbai: {
+      provider: () => new HDWalletProvider(mnemonic, `https://matic-mumbai.chainstacklabs.com`),
+      network_id: 80001,   // Mumbai testnet id
+      gas: 5500000,        // Mumbai has a lower block limit than mainnet
+      confirmations: 0,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
@@ -123,6 +123,6 @@ module.exports = {
   ],
 
   api_keys: {
-    etherscan: process.env.ETHERSCAN_API_KEY
+    polygonscan: process.env.POLYGONSCAN_API_KEY
   }
 }
