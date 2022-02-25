@@ -1,0 +1,40 @@
+{
+  "name": "SWDAOWalletBackend",
+  "version": "1.0.0",
+  "description": "SWDAO wallet backend micro-service, with Biconomy and Gnosis support",
+  "keywords": [
+    "SWDAO-wallet",
+    "meta-transactions",
+    "gasless",
+    "dapp",
+    "pocket",
+    "biconomy",
+    "gnosis",
+    "native"
+  ],
+  "author": "SW DAO",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "14"
+  },
+  "main": "src/index.js",
+  "dependencies": {
+    "@biconomy/mexa": "^1.5.13",
+    "axios": "^0.21.0",
+    "dotenv": "^8.6.0",
+    "ethers": "^4.0.46",
+    "firebase-admin": "^9.8.0",
+    "firebase-functions": "^3.14.1",
+    "web3": "^1.2.6"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^0.2.0"
+  },
+  "private": true
+}

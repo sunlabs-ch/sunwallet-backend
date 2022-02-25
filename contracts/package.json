@@ -1,0 +1,21 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:mainnet": "truffle deploy --reset --network matic",
+    "deploy:testnet": "truffle deploy --reset --network mumbai",
+    "verify:mainnet": "truffle run verify GnosisSafe GnosisSafeProxyFactory --network matic",
+    "verify:testnet": "truffle run verify GnosisSafe GnosisSafeProxyFactory --network mumbai"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.3",
+    "dotenv": "^16.0.0",
+    "truffle-plugin-verify": "^0.5.21"
+  }
+}

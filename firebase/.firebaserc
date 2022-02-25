@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "sun-wallet-dev",
+    "prod": "sun-wallet-prod"
+  }
+}

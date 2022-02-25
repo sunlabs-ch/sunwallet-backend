@@ -1,9 +1,9 @@
 {
-  "name": "SunWalletWatcher",
+  "name": "SWDAOWalletWatcher",
   "version": "1.0.0",
-  "description": "SunWallet watcher, which detect new SCW wallets creations and updates the database",
+  "description": "SWDAO Wallet watcher, which detect new SCW wallets creations and updates the database",
   "keywords": [
-    "sun-wallet",
+    "SWDAO-wallet",
     "meta-transactions",
     "gasless",
     "dapp",
@@ -12,10 +12,10 @@
     "gnosis",
     "native"
   ],
-  "author": "Ararat Tonoyan",
+  "author": "SW DAO",
   "main": "watcher.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "pm2 start index.js --name \"watcher\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "ISC",
@@ -23,6 +23,7 @@
     "axios": "^0.21.0",
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.3.0",
+    "pm2": "^5.2.0",
     "web3": "1.2.6"
   }
 }
